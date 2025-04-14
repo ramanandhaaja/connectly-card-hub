@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,40 +7,83 @@ import { PlusCircle, Users, QrCode, ExternalLink, Activity } from "lucide-react"
 import BusinessCard from "./BusinessCard";
 import { BusinessCardProps } from "./BusinessCard";
 import CardShare from "./CardShare";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const [cards, setCards] = useState<BusinessCardProps[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // In a real app, we would fetch from an API
-    const storedCards = JSON.parse(localStorage.getItem("businessCards") || "[]");
+    const fetchCards = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('business_cards')
+          .select('*');
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data && data.length > 0) {
+          const formattedCards = data.map(card => ({
+            id: card.id,
+            name: card.name,
+            title: card.title,
+            company: card.company || "",
+            email: card.email,
+            phone: card.phone,
+            website: card.website || "",
+            location: card.location || "",
+            linkedin: card.linkedin || "",
+            twitter: card.twitter || "",
+            instagram: card.instagram || "",
+            profileImage: card.profile_image || "",
+            coverImage: card.cover_image || "",
+          }));
+          
+          setCards(formattedCards);
+        } else {
+          const demoCard = {
+            id: "demo-1",
+            name: "Alex Johnson",
+            title: "Product Manager",
+            company: "Connectly",
+            email: "alex@connectly.example",
+            phone: "(555) 123-4567",
+            website: "connectly.example",
+            location: "San Francisco, CA",
+            linkedin: "https://linkedin.com/in/alexjohnson",
+            twitter: "https://twitter.com/alexjohnson",
+            instagram: "https://instagram.com/alexjohnson",
+          };
+          setCards([demoCard]);
+        }
+      } catch (error) {
+        console.error("Error fetching cards:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    // Add demo card if no cards exist
-    if (storedCards.length === 0) {
-      const demoCard = {
-        id: "demo-1",
-        name: "Alex Johnson",
-        title: "Product Manager",
-        company: "Connectly",
-        email: "alex@connectly.example",
-        phone: "(555) 123-4567",
-        website: "connectly.example",
-        location: "San Francisco, CA",
-        linkedin: "https://linkedin.com/in/alexjohnson",
-        twitter: "https://twitter.com/alexjohnson",
-        instagram: "https://instagram.com/alexjohnson",
-      };
-      localStorage.setItem("businessCards", JSON.stringify([demoCard]));
-      setCards([demoCard]);
-    } else {
-      setCards(storedCards);
-    }
-    
-    setLoading(false);
+    fetchCards();
+
+    const channel = supabase
+      .channel('public:business_cards')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'business_cards' 
+      }, (payload) => {
+        console.log('Change received!', payload);
+        fetchCards();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
   
-  // Demo analytics data
   const analytics = {
     views: 32,
     shares: 8,

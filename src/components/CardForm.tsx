@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -15,8 +14,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BusinessCard from "./BusinessCard";
+import { BusinessCardProps } from "./BusinessCard";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -57,20 +58,41 @@ const CardForm = () => {
     },
   });
   
-  const onSubmit = (data: FormValues) => {
-    // In a real app, we would save this to a database
-    console.log("Form submitted:", data);
-    
-    // Generate a unique ID for the card
-    const id = Date.now().toString();
-    
-    // Save to localStorage for demo purposes
-    const cards = JSON.parse(localStorage.getItem("businessCards") || "[]");
-    cards.push({ id, ...data });
-    localStorage.setItem("businessCards", JSON.stringify(cards));
-    
-    toast.success("Business card created successfully!");
-    navigate("/cards");
+  const onSubmit = async (data: FormValues) => {
+    try {
+      // Insert the data into Supabase
+      const { data: insertedCard, error } = await supabase
+        .from('business_cards')
+        .insert([
+          {
+            name: data.name,
+            title: data.title,
+            company: data.company || null,
+            email: data.email,
+            phone: data.phone,
+            website: data.website || null,
+            location: data.location || null,
+            linkedin: data.linkedin || null,
+            twitter: data.twitter || null,
+            instagram: data.instagram || null,
+            profile_image: data.profileImage || null,
+            cover_image: data.coverImage || null,
+            // If we have authentication, we would add user_id: supabase.auth.getUser().id here
+          }
+        ])
+        .select()
+        .single();
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Business card created successfully!");
+      navigate("/cards");
+    } catch (error) {
+      console.error("Error creating card:", error);
+      toast.error("Failed to create business card");
+    }
   };
   
   const formValues = form.watch();

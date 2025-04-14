@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,24 +6,84 @@ import BusinessCard from "@/components/BusinessCard";
 import { BusinessCardProps } from "@/components/BusinessCard";
 import CardShare from "@/components/CardShare";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const CardsPage = () => {
   const [cards, setCards] = useState<BusinessCardProps[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // In a real app, we would fetch from an API
-    const storedCards = JSON.parse(localStorage.getItem("businessCards") || "[]");
-    setCards(storedCards);
-    setLoading(false);
+    const fetchCards = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('business_cards')
+          .select('*');
+        
+        if (error) {
+          throw error;
+        }
+        
+        const formattedCards = data.map(card => ({
+          id: card.id,
+          name: card.name,
+          title: card.title,
+          company: card.company || "",
+          email: card.email,
+          phone: card.phone,
+          website: card.website || "",
+          location: card.location || "",
+          linkedin: card.linkedin || "",
+          twitter: card.twitter || "",
+          instagram: card.instagram || "",
+          profileImage: card.profile_image || "",
+          coverImage: card.cover_image || "",
+        }));
+        
+        setCards(formattedCards);
+      } catch (error) {
+        console.error("Error fetching cards:", error);
+        toast.error("Failed to fetch cards");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCards();
+
+    const channel = supabase
+      .channel('public:business_cards')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'business_cards' 
+      }, (payload) => {
+        console.log('Change received!', payload);
+        fetchCards();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
   
-  const deleteCard = (id: string) => {
+  const deleteCard = async (id: string) => {
     if (confirm("Are you sure you want to delete this card?")) {
-      const updatedCards = cards.filter(card => card.id !== id);
-      setCards(updatedCards);
-      localStorage.setItem("businessCards", JSON.stringify(updatedCards));
-      toast.success("Card deleted successfully");
+      try {
+        const { error } = await supabase
+          .from('business_cards')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          throw error;
+        }
+        
+        toast.success("Card deleted successfully");
+      } catch (error) {
+        console.error("Error deleting card:", error);
+        toast.error("Failed to delete card");
+      }
     }
   };
   

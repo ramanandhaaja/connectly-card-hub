@@ -9,12 +9,13 @@ import {
   Twitter, 
   Instagram, 
   MapPin, 
-  Download, 
-  Share2,
+  Download,
+  Share2, 
   Smartphone
 } from "lucide-react";
 import { BusinessCardProps } from "@/components/BusinessCard";
 import CardShare from "@/components/CardShare";
+import { supabase } from "@/integrations/supabase/client";
 
 const CardPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,15 +23,61 @@ const CardPage = () => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // In a real app, we would fetch from an API
-    const storedCards = JSON.parse(localStorage.getItem("businessCards") || "[]");
-    const foundCard = storedCards.find((c: BusinessCardProps) => c.id === id);
+    const fetchCard = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('business_cards')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          const formattedCard: BusinessCardProps = {
+            id: data.id,
+            name: data.name,
+            title: data.title,
+            company: data.company || "",
+            email: data.email,
+            phone: data.phone,
+            website: data.website || "",
+            location: data.location || "",
+            linkedin: data.linkedin || "",
+            twitter: data.twitter || "",
+            instagram: data.instagram || "",
+            profileImage: data.profile_image || "",
+            coverImage: data.cover_image || "",
+          };
+          setCard(formattedCard);
+        }
+      } catch (error) {
+        console.error("Error fetching card:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    if (foundCard) {
-      setCard(foundCard);
-    }
-    
-    setLoading(false);
+    fetchCard();
+
+    const channel = supabase
+      .channel(`public:business_cards:id=eq.${id}`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'business_cards',
+        filter: `id=eq.${id}`
+      }, (payload) => {
+        console.log('Card change received!', payload);
+        fetchCard();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [id]);
   
   if (loading) {
@@ -54,7 +101,6 @@ const CardPage = () => {
   }
   
   const saveContact = () => {
-    // Create a vCard format
     const vcard = `BEGIN:VCARD
 VERSION:3.0
 FN:${card.name}
@@ -66,30 +112,25 @@ URL:${card.website || ''}
 ADR;TYPE=WORK:;;${card.location || ''}
 END:VCARD`;
     
-    // Create a Blob from the vCard data
     const blob = new Blob([vcard], { type: 'text/vcard' });
     const url = URL.createObjectURL(blob);
     
-    // Create a download link
     const a = document.createElement('a');
     a.href = url;
     a.download = `${card.name.replace(/\s+/g, '_')}.vcf`;
     a.click();
     
-    // Clean up
     URL.revokeObjectURL(url);
   };
   
   return (
     <div className="container max-w-md py-8">
       <div className="rounded-xl overflow-hidden shadow-lg bg-white">
-        {/* Card Header */}
         <div 
           className="h-32 bg-gradient-to-r from-connectly-400 to-connectly-600 relative"
           style={card.coverImage ? { backgroundImage: `url(${card.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
         />
         
-        {/* Profile Section */}
         <div className="px-6 pt-4 pb-6">
           <div className="flex items-center mb-6">
             <div className="h-20 w-20 rounded-full bg-connectly-100 border-4 border-white -mt-12 overflow-hidden">
@@ -111,7 +152,6 @@ END:VCARD`;
             </div>
           </div>
           
-          {/* Contact Info */}
           <div className="space-y-4 mb-6">
             {card.phone && (
               <a href={`tel:${card.phone}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
@@ -146,7 +186,6 @@ END:VCARD`;
             )}
           </div>
           
-          {/* Social Links */}
           {(card.linkedin || card.twitter || card.instagram) && (
             <div className="flex gap-4 mb-6">
               {card.linkedin && (
@@ -184,7 +223,6 @@ END:VCARD`;
             </div>
           )}
           
-          {/* Actions */}
           <div className="flex gap-4">
             <Button className="flex-1 gap-2" onClick={saveContact}>
               <Download className="h-4 w-4" />
