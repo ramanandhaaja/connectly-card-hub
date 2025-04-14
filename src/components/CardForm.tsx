@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -36,35 +37,40 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const CardForm = () => {
+interface CardFormProps {
+  initialData?: any;
+}
+
+const CardForm = ({ initialData }: CardFormProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("details");
+  const isEditing = !!initialData;
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      title: "",
-      company: "",
-      email: "",
-      phone: "",
-      website: "",
-      location: "",
-      linkedin: "",
-      twitter: "",
-      instagram: "",
-      profileImage: "",
-      coverImage: "",
+      name: initialData?.name || "",
+      title: initialData?.title || "",
+      company: initialData?.company || "",
+      email: initialData?.email || "",
+      phone: initialData?.phone || "",
+      website: initialData?.website || "",
+      location: initialData?.location || "",
+      linkedin: initialData?.linkedin || "",
+      twitter: initialData?.twitter || "",
+      instagram: initialData?.instagram || "",
+      profileImage: initialData?.profile_image || "",
+      coverImage: initialData?.cover_image || "",
     },
   });
   
   const onSubmit = async (data: FormValues) => {
     try {
-      // Insert the data into Supabase
-      const { data: insertedCard, error } = await supabase
-        .from('business_cards')
-        .insert([
-          {
+      if (isEditing) {
+        // Update existing card
+        const { error } = await supabase
+          .from('business_cards')
+          .update({
             name: data.name,
             title: data.title,
             company: data.company || null,
@@ -77,21 +83,40 @@ const CardForm = () => {
             instagram: data.instagram || null,
             profile_image: data.profileImage || null,
             cover_image: data.coverImage || null,
-            // If we have authentication, we would add user_id: supabase.auth.getUser().id here
-          }
-        ])
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
+          })
+          .eq('id', initialData.id);
+        
+        if (error) throw error;
+        toast.success("Business card updated successfully!");
+      } else {
+        // Create new card
+        const { error } = await supabase
+          .from('business_cards')
+          .insert([
+            {
+              name: data.name,
+              title: data.title,
+              company: data.company || null,
+              email: data.email,
+              phone: data.phone,
+              website: data.website || null,
+              location: data.location || null,
+              linkedin: data.linkedin || null,
+              twitter: data.twitter || null,
+              instagram: data.instagram || null,
+              profile_image: data.profileImage || null,
+              cover_image: data.coverImage || null,
+            }
+          ]);
+        
+        if (error) throw error;
+        toast.success("Business card created successfully!");
       }
       
-      toast.success("Business card created successfully!");
       navigate("/cards");
     } catch (error) {
-      console.error("Error creating card:", error);
-      toast.error("Failed to create business card");
+      console.error(`Error ${isEditing ? 'updating' : 'creating'} card:`, error);
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} business card`);
     }
   };
   
@@ -99,7 +124,9 @@ const CardForm = () => {
   
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-6">Create Your Digital Business Card</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        {isEditing ? "Edit" : "Create"} Your Digital Business Card
+      </h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
@@ -294,7 +321,9 @@ const CardForm = () => {
                 </TabsContent>
                 
                 <div className="flex justify-end">
-                  <Button type="submit">Create Card</Button>
+                  <Button type="submit">
+                    {isEditing ? "Update" : "Create"} Card
+                  </Button>
                 </div>
               </form>
             </Form>

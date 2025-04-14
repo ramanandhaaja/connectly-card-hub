@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ const CardsPage = () => {
     
     fetchCards();
 
+    // Set up realtime subscription
     const channel = supabase
       .channel('public:business_cards')
       .on('postgres_changes', { 

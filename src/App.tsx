@@ -9,6 +9,7 @@ import Dashboard from "./components/Dashboard";
 import CardsPage from "./pages/CardsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import CreateCard from "./pages/CreateCard";
+import EditCard from "./pages/EditCard";
 import CardPage from "./pages/CardPage";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/cards" element={<CardsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/create" element={<CreateCard />} />
+              <Route path="/edit/:id" element={<EditCard />} />
               <Route path="/card/:id" element={<CardPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
