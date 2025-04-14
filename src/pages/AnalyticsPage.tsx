@@ -9,7 +9,9 @@ import {
   Share2, 
   Download, 
   Globe, 
-  Link as LinkIcon
+  Link as LinkIcon,
+  Mail,
+  Smartphone
 } from "lucide-react";
 
 const AnalyticsPage = () => {
