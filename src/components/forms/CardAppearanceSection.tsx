@@ -15,6 +15,7 @@ const CardAppearanceSection = ({ control }: CardAppearanceSectionProps) => {
         name="profileImage"
         label="Profile Image URL"
         placeholder="https://example.com/profile.jpg"
+        description="Add a URL to your profile picture (recommended size: 200x200 pixels)"
       />
       
       <CardFormField
@@ -22,6 +23,7 @@ const CardAppearanceSection = ({ control }: CardAppearanceSectionProps) => {
         name="coverImage"
         label="Cover Image URL"
         placeholder="https://example.com/cover.jpg"
+        description="Add a URL to your cover image (recommended size: 800x200 pixels)"
       />
     </CardFormSection>
   );

@@ -11,8 +11,7 @@ import {
   Instagram, 
   MapPin, 
   Download,
-  Share2, 
-  Smartphone
+  Share2
 } from "lucide-react";
 import { BusinessCardProps } from "@/components/BusinessCard";
 import CardShare from "@/components/CardShare";

@@ -49,7 +49,7 @@ const BusinessCard = ({
   const isExtended = variant === "extended";
   
   return (
-    <div className={`business-card ${isExtended ? 'w-full max-w-md aspect-[4/2.2]' : ''}`}>
+    <div className={`business-card ${isExtended ? 'w-full max-w-md aspect-[4/2.2]' : 'w-[360px] aspect-[16/9]'}`}>
       <Card className="h-full w-full overflow-hidden border border-gray-200 p-0">
         {/* Card Header with Cover Image */}
         <div 
