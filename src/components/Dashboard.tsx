@@ -178,7 +178,7 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {cards.map((card) => (
                   <div key={card.id} className="flex flex-col items-center">
-                    <BusinessCard {...card} />
+                    <BusinessCard {...card} variant="extended" />
                     <div className="mt-4 flex gap-2">
                       <Link to={`/edit/${card.id}`}>
                         <Button variant="outline">Edit</Button>

@@ -118,7 +118,7 @@ const CardsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {cards.map((card) => (
             <div key={card.id} className="flex flex-col">
-              <BusinessCard {...card} />
+              <BusinessCard {...card} variant="extended" />
               <div className="mt-4 grid grid-cols-3 gap-2">
                 <Link to={`/card/${card.id}`} className="col-span-2">
                   <Button variant="outline" className="w-full">View</Button>

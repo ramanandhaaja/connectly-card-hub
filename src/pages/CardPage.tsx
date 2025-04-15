@@ -133,7 +133,7 @@ END:VCARD`;
         
         <div className="px-6 pt-4 pb-6">
           <div className="flex items-center mb-6">
-            <div className="h-20 w-20 rounded-full bg-connectly-100 border-4 border-white -mt-12 overflow-hidden">
+            <div className="h-20 w-20 rounded-full bg-connectly-100 border-4 border-white -mt-12 overflow-hidden flex items-center justify-center">
               {card.profileImage ? (
                 <img 
                   src={card.profileImage} 

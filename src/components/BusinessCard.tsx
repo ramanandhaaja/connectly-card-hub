@@ -26,6 +26,7 @@ export interface BusinessCardProps {
   profileImage?: string;
   coverImage?: string;
   color?: string;
+  variant?: "standard" | "extended";
 }
 
 const BusinessCard = ({
@@ -42,18 +43,22 @@ const BusinessCard = ({
   profileImage,
   coverImage,
   color = "from-connectly-400 to-connectly-600",
+  variant = "standard",
 }: BusinessCardProps) => {
+
+  const isExtended = variant === "extended";
+  
   return (
     <div className="business-card">
-      <Card className="h-full w-full overflow-hidden border border-gray-200 p-0">
+      <Card className={`h-full w-full overflow-hidden border border-gray-200 p-0 ${isExtended ? 'aspect-[4/2]' : ''}`}>
         {/* Card Header with Cover Image */}
         <div 
-          className={`h-1/3 w-full bg-gradient-to-r ${color} relative`}
+          className={`${isExtended ? 'h-1/4' : 'h-1/3'} w-full bg-gradient-to-r ${color} relative`}
           style={coverImage ? { backgroundImage: `url(${coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
         />
         
         {/* Profile Section */}
-        <div className="h-2/3 p-4 flex flex-col relative">
+        <div className={`${isExtended ? 'h-3/4' : 'h-2/3'} p-4 flex flex-col relative`}>
           {/* Avatar */}
           <Avatar className="h-16 w-16 absolute -top-8 left-4 border-4 border-white">
             <AvatarImage src={profileImage} alt={name} />
