@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -124,10 +125,10 @@ END:VCARD`;
   };
   
   return (
-    <div className="container max-w-md py-8">
+    <div className="container max-w-lg py-8">
       <div className="rounded-xl overflow-hidden shadow-lg bg-white">
         <div 
-          className="h-32 bg-gradient-to-r from-connectly-400 to-connectly-600 relative"
+          className="h-40 bg-gradient-to-r from-connectly-400 to-connectly-600 relative"
           style={card.coverImage ? { backgroundImage: `url(${card.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
         />
         
