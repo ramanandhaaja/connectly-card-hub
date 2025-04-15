@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import CardForm from "@/components/CardForm";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const EditCard = () => {
   const { id } = useParams();
@@ -40,7 +41,12 @@ const EditCard = () => {
   }, [id, navigate]);
 
   if (loading) {
-    return <div className="container py-8">Loading card data...</div>;
+    return (
+      <div className="container py-8 flex justify-center items-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading card data...</span>
+      </div>
+    );
   }
 
   return <CardForm initialData={cardData} />;

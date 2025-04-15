@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -15,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BusinessCard from "./BusinessCard";
-import { BusinessCardProps } from "./BusinessCard";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,7 +87,7 @@ const CardForm = ({ initialData }: CardFormProps) => {
         if (error) throw error;
         toast.success("Business card updated successfully!");
       } else {
-        // Create new card
+        // Create new card - note we're not setting user_id here since we don't have auth yet
         const { error } = await supabase
           .from('business_cards')
           .insert([
